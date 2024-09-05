@@ -2,7 +2,7 @@ FROM node:20-alpine3.20
 
 WORKDIR /home/app
 
-COPY . /home/app
+COPY ./order /home/app
 
 
 ARG BUILDTIME_DB_DATABASE=default
@@ -18,7 +18,7 @@ ENV DB_USERNAME=$BUILDTIME_DB_USERNAME
 ENV DB_PASSWORD=$BUILDTIME_DB_PASSWORD
 
 
-# RUN npm install
+RUN npm install
 RUN npm run build
 
 EXPOSE 3001
