@@ -1,0 +1,45 @@
+pipeline {
+    agent any
+    stages {
+        stage("build") {
+            when { 
+                allOf {
+                    changeset "order/**"
+                    expression {  // there are changes in order/...
+                        sh(returnStatus: true, script: 'git diff order/') == 0
+                    }
+                }
+            }
+            environment {
+                // DOCKER_TAG="order-service-${GIT_BRANCH.tokenize('/').pop()}-${GIT_COMMIT.substring(0,7)}"
+                DOCKER_TAG="order-service-${GIT_COMMIT.substring(0,7)}"
+                DOCKER_IMAGE="heyyytamvo/eks"
+            }
+            steps {
+                withCredentials([
+                    string(credentialsId: 'DB_HOST', variable: 'DB_HOST'),
+                    string(credentialsId: 'DB_PORT', variable: 'DB_PORT'),
+                    string(credentialsId: 'DB_USERNAME', variable: 'DB_USERNAME'),
+                    string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD'),
+                    string(credentialsId: 'DB_DATABASE', variable: 'DB_DATABASE')
+                ]){
+                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} \
+                    --build-arg BUILDTIME_DB_HOST=${DB_HOST} \
+                    --build-arg BUILDTIME_DB_PORT=${DB_PORT} \
+                    --build-arg BUILDTIME_DB_USERNAME=${DB_USERNAME} \
+                    --build-arg BUILDTIME_DB_PASSWORD=${DB_PASSWORD} \
+                    --build-arg BUILDTIME_DB_DATABASE=${DB_DATABASE} \
+                    -f order/Dockerfile . "
+                }
+                sh "docker image ls | grep ${DOCKER_IMAGE}"
+                withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh 'echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin'
+                    sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                }
+
+                //clean to save disk
+                sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
+            }
+        }
+    }
+}
