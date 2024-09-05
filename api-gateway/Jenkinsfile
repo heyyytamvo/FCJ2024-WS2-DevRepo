@@ -11,7 +11,8 @@ pipeline {
                 }
             }
             environment {
-                DOCKER_TAG="api-gateway-${GIT_BRANCH.tokenize('/').pop()}-${GIT_COMMIT.substring(0,7)}"
+                // DOCKER_TAG="api-gateway-${GIT_BRANCH.tokenize('/').pop()}-${GIT_COMMIT.substring(0,7)}"
+                DOCKER_TAG="api-gateway-${GIT_COMMIT.substring(0,7)}"
                 DOCKER_IMAGE="heyyytamvo/eks"
             }
             steps {
