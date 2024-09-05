@@ -8,10 +8,10 @@ pipeline {
                     expression {  // there are changes in api-gateway/...
                         sh(returnStatus: true, script: 'git diff api-gateway/') == 0
                     }
-                    expression {   // ...and nowhere else.
-                        sh(returnStatus: true, script: 'git diff order/') == 1
-                        sh(returnStatus: true, script: 'git diff service/') == 1
-                    }
+                    // expression {   // ...and nowhere else.
+                    //     sh(returnStatus: true, script: 'git diff order/') == 1
+                    //     sh(returnStatus: true, script: 'git diff info/') == 1
+                    // }
                 }
             }
             environment {
