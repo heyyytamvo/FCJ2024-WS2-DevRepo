@@ -2,6 +2,18 @@ pipeline {
     agent any
     stages {
         stage("build") {
+            when { 
+                allOf {
+                    changeset "api-gateway/**"
+                    expression {  // there are changes in api-gateway/...
+                        sh(returnStatus: true, script: 'git diff api-gateway/') == 1
+                    }
+                    expression {   // ...and nowhere else.
+                        sh(returnStatus: true, script: 'git diff order/') == 0
+                        sh(returnStatus: true, script: 'git diff service/') == 0
+                    }
+                }
+            }
             environment {
                 DOCKER_TAG="api-gateway-${GIT_BRANCH.tokenize('/').pop()}-${GIT_COMMIT.substring(0,7)}"
                 DOCKER_IMAGE="heyyytamvo/eks"
