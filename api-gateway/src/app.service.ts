@@ -11,7 +11,7 @@ export class AppService {
     private readonly configService: ConfigService
   ) {}
   getHello(): string {
-    return 'Hello World!';
+    return 'Hello World! This is an update to test K8s';
   }
 
   async createOrder(orderData: createOrderDto): Promise<any> {
