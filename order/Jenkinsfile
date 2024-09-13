@@ -41,5 +41,25 @@ pipeline {
                 sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
             }
         }
+
+        stage('SonarQube Analysis') {
+            when { 
+                allOf {
+                    changeset "order/**"
+                    expression { 
+                        sh(returnStatus: true, script: 'git diff --quiet order/') == 0
+                    }
+                }
+            }
+
+            steps {
+                script {
+                    def scannerHome = tool 'SonarScanner'
+                    withSonarQubeEnv('jenkins') {
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                }
+            }
+        }
     }
 }
