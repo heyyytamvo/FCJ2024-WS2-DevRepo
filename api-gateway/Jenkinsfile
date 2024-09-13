@@ -1,13 +1,7 @@
 pipeline {
     agent any
 
-    stages {
-        stage('SCM') {
-            steps {
-                checkout scm
-            }
-        }
-        
+    stages {        
         stage('Build') {
             when { 
                 allOf {
@@ -43,7 +37,7 @@ pipeline {
                     }
                 }
             }
-            
+
             steps {
                 script {
                     def scannerHome = tool 'SonarScanner'
