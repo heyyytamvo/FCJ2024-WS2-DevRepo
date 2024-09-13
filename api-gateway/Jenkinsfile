@@ -1,30 +1,38 @@
 pipeline {
     agent any
     stages {
-        stage("build") {
-            when { 
-                allOf {
-                    changeset "api-gateway/**"
-                    expression {  // there are changes in api-gateway/...
-                        sh(returnStatus: true, script: 'git diff api-gateway/') == 0
-                    }
-                }
-            }
-            environment {
-                // DOCKER_TAG="api-gateway-${GIT_BRANCH.tokenize('/').pop()}-${GIT_COMMIT.substring(0,7)}"
-                DOCKER_TAG="api-gateway-${GIT_COMMIT.substring(0,7)}"
-                DOCKER_IMAGE="heyyytamvo/eks"
-            }
-            steps {
-                sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -f api-gateway/Dockerfile . "
-                sh "docker image ls | grep ${DOCKER_IMAGE}"
-                withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh 'echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin'
-                    sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
-                }
+        // stage("build") {
+        //     when { 
+        //         allOf {
+        //             changeset "api-gateway/**"
+        //             expression {  // there are changes in api-gateway/...
+        //                 sh(returnStatus: true, script: 'git diff api-gateway/') == 0
+        //             }
+        //         }
+        //     }
+        //     environment {
+        //         // DOCKER_TAG="api-gateway-${GIT_BRANCH.tokenize('/').pop()}-${GIT_COMMIT.substring(0,7)}"
+        //         DOCKER_TAG="api-gateway-${GIT_COMMIT.substring(0,7)}"
+        //         DOCKER_IMAGE="heyyytamvo/eks"
+        //     }
+        //     steps {
+        //         sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -f api-gateway/Dockerfile . "
+        //         sh "docker image ls | grep ${DOCKER_IMAGE}"
+        //         withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+        //             sh 'echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin'
+        //             sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+        //         }
 
-                //clean to save disk
-                sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
+        //         //clean to save disk
+        //         sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
+        //     }
+        // }
+
+        stage("scan") {
+            steps {
+                withSonarQubeEnv(installationName: 'jenkins') { 
+                    sh './mvnw clean org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.0.2155:sonar'
+                }
             }
         }
     }
