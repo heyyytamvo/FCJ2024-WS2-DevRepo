@@ -27,12 +27,14 @@ pipeline {
         //         sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
         //     }
         // }
-
+        stage('SCM') {
+            checkout scm
+        }
+        
         stage("scan") {
-            steps {
-                withSonarQubeEnv(installationName: 'jenkins') { 
-                    sh 'mvn sonar:sonar -Dsonar.projectKey=Test -Dsonar.sources=.'
-                }
+            def scannerHome = tool 'SonarScanner';
+            withSonarQubeEnv(installationName: 'jenkins') {
+                sh "${scannerHome}/bin/sonar-scanner"
             }
         }
     }
