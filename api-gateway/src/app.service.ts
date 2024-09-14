@@ -7,11 +7,10 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AppService {
   constructor(
-    private readonly httpService: HttpService,
-    private readonly configService: ConfigService
+    private readonly httpService: HttpService
   ) {}
   getHello(): string {
-    return 'Hello World! This is an update to test K8s by heyyytamvo haha hahahih';
+    return 'Hello World! This is an update to test K8s by heyyytamvo haha hahahihhohoh';
   }
 
   async createOrder(orderData: createOrderDto): Promise<any> {
