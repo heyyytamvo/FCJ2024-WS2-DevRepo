@@ -71,16 +71,16 @@ pipeline {
                 script{
                     docker.withRegistry("https://891377192865.dkr.ecr.us-east-1.amazonaws.com", "ecr:us-east-1:aws-cre") {
                         // app.push("${DOCKER_IMAGE}:${DOCKER_TAG}")
-                        app.push("latest")   
+                        app.push()   
                     }
                 }
             }
         }
 
-        stage("Clean Resources"){
-            steps{
-                sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
-            }
-        }
+        // stage("Clean Resources"){
+        //     steps{
+        //         sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
+        //     }
+        // }
     }
 }
