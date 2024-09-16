@@ -13,7 +13,7 @@ pipeline {
             }
             environment {
                 REGISTRY_DOMAIN = "https://891377192865.dkr.ecr.us-east-1.amazonaws.com/fcjws2"
-                DOCKERFILE_PATH = "api-gateway/"
+                DOCKERFILE_PATH = "./api-gateway/"
                 DOCKER_TAG = "api-gateway-${GIT_COMMIT.substring(0, 7)}"
                 DOCKER_IMAGE = "891377192865.dkr.ecr.us-east-1.amazonaws.com/fcjws2"
             }
