@@ -77,10 +77,10 @@ pipeline {
             }
         }
 
-        // stage("Clean Resources"){
-        //     steps{
-        //         sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
-        //     }
-        // }
+        stage("Clean Resources"){
+            steps{
+                app.remove()
+            }
+        }
     }
 }
