@@ -4,6 +4,7 @@ pipeline {
     environment {
         REGISTRY_DOMAIN = "https://891377192865.dkr.ecr.us-east-1.amazonaws.com"
         DOCKERFILE_PATH = "api-gateway/Dockerfile"
+        SERVICE = "api-gateway"
         DOCKER_TAG = "api-gateway-${GIT_COMMIT.substring(0, 7)}"
         DOCKER_IMAGE = "891377192865.dkr.ecr.us-east-1.amazonaws.com/fcjws2"
         CRE_ID = "aws-cre"
@@ -13,9 +14,9 @@ pipeline {
         // stage('SonarQube Analysis Source Code') {
         //     when { 
         //         allOf {
-        //             changeset "api-gateway/**"
+        //             changeset "${SERVICE}/**"
         //             expression { 
-        //                 sh(returnStatus: true, script: 'git diff --quiet api-gateway/') == 0
+        //                 sh(returnStatus: true, script: 'git diff --quiet ${SERVICE}/') == 0
         //             }
         //         }
         //     }
@@ -33,15 +34,15 @@ pipeline {
         stage('Build') {
             when { 
                 allOf {
-                    changeset "api-gateway/**"
+                    changeset "${SERVICE}/**"
                     expression { 
-                        sh(returnStatus: true, script: 'git diff --quiet api-gateway/') == 0
+                        sh(returnStatus: true, script: 'git diff --quiet ${SERVICE}/') == 0
                     }
                 }
             }
             steps {
                 script{
-                    app = docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}", "--no-cache", "-f ${DOCKERFILE_PATH} .")
+                    app = docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}", "-f ${DOCKERFILE_PATH} .")
                 }
             }
         }
