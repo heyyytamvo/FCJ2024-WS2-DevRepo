@@ -71,7 +71,9 @@ pipeline {
         }
 
         stage("Clean Resources"){
-            sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
+            steps{
+                sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
+            }
         }
     }
 }
