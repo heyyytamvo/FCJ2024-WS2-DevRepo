@@ -1,7 +1,35 @@
 pipeline {
     agent any
 
-    stages {        
+    environment {
+        REGISTRY_DOMAIN = "https://891377192865.dkr.ecr.us-east-1.amazonaws.com"
+        DOCKERFILE_PATH = "api-gateway/Dockerfile"
+        DOCKER_TAG = "api-gateway-${GIT_COMMIT.substring(0, 7)}"
+        DOCKER_IMAGE = "891377192865.dkr.ecr.us-east-1.amazonaws.com/fcjws2"
+        CRE_ID = "aws-cre"
+    }
+
+    stages { 
+        stage('SonarQube Analysis Source Code') {
+            when { 
+                allOf {
+                    changeset "api-gateway/**"
+                    expression { 
+                        sh(returnStatus: true, script: 'git diff --quiet api-gateway/') == 0
+                    }
+                }
+            }
+
+            steps {
+                script {
+                    def scannerHome = tool 'SonarScanner'
+                    withSonarQubeEnv('jenkins') {
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                }
+            }
+        }
+
         stage('Build') {
             when { 
                 allOf {
@@ -11,75 +39,20 @@ pipeline {
                     }
                 }
             }
-            environment {
-                REGISTRY_DOMAIN = "https://891377192865.dkr.ecr.us-east-1.amazonaws.com"
-                DOCKERFILE_PATH = "api-gateway/Dockerfile"
-                DOCKER_TAG = "api-gateway-${GIT_COMMIT.substring(0, 7)}"
-                DOCKER_IMAGE = "891377192865.dkr.ecr.us-east-1.amazonaws.com/fcjws2"
-            }
             steps {
-                // script{
-                //     // Build the Docker image
-                //     sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -f api-gateway/Dockerfile ."
-            
-                //     // Verify the image was built
-                //     sh "docker image ls | grep ${DOCKER_IMAGE}"
-
-                //     // Push to AWS ECR
-                //     docker.withRegistry("https://891377192865.dkr.ecr.us-east-1.amazonaws.com/fcjws2", "ecr:us-east-1:aws-cre") {
-                //         docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push()
-                //     }
-            
-                //     // Clean up to save disk space
-                //     sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
-                // }
-                // sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -f api-gateway/Dockerfile ."
-                // sh "docker image ls | grep ${DOCKER_IMAGE}"
-
                 script{
                     app = docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}", "-f ${DOCKERFILE_PATH} .")
                 }
-                // withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                //     sh 'echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin'
-                //     sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
-                // }
             }
         }
-
-        // stage('SonarQube Analysis Source Code') {
-        //     when { 
-        //         allOf {
-        //             changeset "api-gateway/**"
-        //             expression { 
-        //                 sh(returnStatus: true, script: 'git diff --quiet api-gateway/') == 0
-        //             }
-        //         }
-        //     }
-
-        //     steps {
-        //         script {
-        //             def scannerHome = tool 'SonarScanner'
-        //             withSonarQubeEnv('jenkins') {
-        //                 sh "${scannerHome}/bin/sonar-scanner"
-        //             }
-        //         }
-        //     }
-        // }
 
         stage('Deploy Image') {
             steps{
                 script{
-                    docker.withRegistry("https://891377192865.dkr.ecr.us-east-1.amazonaws.com", "ecr:us-east-1:aws-cre") {
-                        // app.push("${DOCKER_IMAGE}:${DOCKER_TAG}")
+                    docker.withRegistry("${REGISTRY_DOMAIN}", "ecr:us-east-1:${CRE_ID}") {
                         app.push()   
                     }
                 }
-            }
-        }
-
-        stage("Clean Resources"){
-            steps{
-                app.remove()
             }
         }
     }
