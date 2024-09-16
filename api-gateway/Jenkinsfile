@@ -13,37 +13,37 @@ pipeline {
             }
             environment {
                 DOCKER_TAG = "api-gateway-${GIT_COMMIT.substring(0, 7)}"
-                DOCKER_IMAGE = "heyyytamvo/eks"
+                DOCKER_IMAGE = "fcjws2:latest 891377192865.dkr.ecr.us-east-1.amazonaws.com/fcjws2"
             }
             steps {
-                script{
-                    // Build the Docker image
-                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -f api-gateway/Dockerfile ."
+                // script{
+                //     // Build the Docker image
+                //     sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -f api-gateway/Dockerfile ."
             
-                    // Verify the image was built
-                    sh "docker image ls | grep ${DOCKER_IMAGE}"
+                //     // Verify the image was built
+                //     sh "docker image ls | grep ${DOCKER_IMAGE}"
 
-                    // Push to AWS ECR
-                    docker.withRegistry("https://891377192865.dkr.ecr.us-east-1.amazonaws.com/fcjws2", "ecr:us-east-1:aws-cre") {
-                        docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push()
-                    }
+                //     // Push to AWS ECR
+                //     docker.withRegistry("https://891377192865.dkr.ecr.us-east-1.amazonaws.com/fcjws2", "ecr:us-east-1:aws-cre") {
+                //         docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push()
+                //     }
             
-                    // Clean up to save disk space
-                    sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
-                }
-                // sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -f api-gateway/Dockerfile ."
-                // sh "docker image ls | grep ${DOCKER_IMAGE}"
-                // // withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                // //     sh 'echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin'
-                // //     sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
-                // // }
-
-                // docker.withRegistry("https://891377192865.dkr.ecr.us-east-1.amazonaws.com/fcjws2", "ecr:us-east-1:aws-cre") {
-                //     docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push()
+                //     // Clean up to save disk space
+                //     sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
                 // }
+                sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -f api-gateway/Dockerfile ."
+                sh "docker image ls | grep ${DOCKER_IMAGE}"
+                // withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                //     sh 'echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin'
+                //     sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                // }
+
+                docker.withRegistry("https://891377192865.dkr.ecr.us-east-1.amazonaws.com/fcjws2", "ecr:us-east-1:aws-cre") {
+                    docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push()
+                }
                 
-                // // Clean up to save disk space
-                // sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                // Clean up to save disk space
+                sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
             }
         }
 
