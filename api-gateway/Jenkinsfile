@@ -69,7 +69,7 @@ pipeline {
         stage('Deploy Image') {
             steps{
                 script{
-                    docker.withRegistry("${REGISTRY_DOMAIN}", "ecr:us-east-1:aws-cre") {
+                    docker.withRegistry("https://891377192865.dkr.ecr.us-east-1.amazonaws.com", "ecr:us-east-1:aws-cre") {
                         app.push("${DOCKER_TAG}")
                     }
                 }
