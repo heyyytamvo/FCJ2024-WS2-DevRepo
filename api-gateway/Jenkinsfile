@@ -18,9 +18,13 @@ pipeline {
             steps {
                 sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -f api-gateway/Dockerfile ."
                 sh "docker image ls | grep ${DOCKER_IMAGE}"
-                withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh 'echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin'
-                    sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                // withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                //     sh 'echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin'
+                //     sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                // }
+
+                docker.withRegistry("https://891377192865.dkr.ecr.us-east-1.amazonaws.com/fcjws2", "ecr:us-east-1:aws-cre") {
+                    docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push()
                 }
                 
                 // Clean up to save disk space
@@ -28,24 +32,24 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis Source Code') {
-            when { 
-                allOf {
-                    changeset "api-gateway/**"
-                    expression { 
-                        sh(returnStatus: true, script: 'git diff --quiet api-gateway/') == 0
-                    }
-                }
-            }
+        // stage('SonarQube Analysis Source Code') {
+        //     when { 
+        //         allOf {
+        //             changeset "api-gateway/**"
+        //             expression { 
+        //                 sh(returnStatus: true, script: 'git diff --quiet api-gateway/') == 0
+        //             }
+        //         }
+        //     }
 
-            steps {
-                script {
-                    def scannerHome = tool 'SonarScanner'
-                    withSonarQubeEnv('jenkins') {
-                        sh "${scannerHome}/bin/sonar-scanner"
-                    }
-                }
-            }
-        }
+        //     steps {
+        //         script {
+        //             def scannerHome = tool 'SonarScanner'
+        //             withSonarQubeEnv('jenkins') {
+        //                 sh "${scannerHome}/bin/sonar-scanner"
+        //             }
+        //         }
+        //     }
+        // }
     }
 }
