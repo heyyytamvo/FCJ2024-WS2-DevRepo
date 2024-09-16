@@ -13,7 +13,7 @@ pipeline {
             }
             environment {
                 DOCKER_TAG = "api-gateway-${GIT_COMMIT.substring(0, 7)}"
-                DOCKER_IMAGE = "fcjws2:latest 891377192865.dkr.ecr.us-east-1.amazonaws.com/fcjws2"
+                DOCKER_IMAGE = "891377192865.dkr.ecr.us-east-1.amazonaws.com/fcjws2"
             }
             steps {
                 // script{
@@ -37,10 +37,12 @@ pipeline {
                 //     sh 'echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin'
                 //     sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
                 // }
-
-                docker.withRegistry("https://891377192865.dkr.ecr.us-east-1.amazonaws.com/fcjws2", "ecr:us-east-1:aws-cre") {
-                    docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push()
+                script{
+                    docker.withRegistry("https://891377192865.dkr.ecr.us-east-1.amazonaws.com/fcjws2", "ecr:us-east-1:aws-cre") {
+                        docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push()
+                    }
                 }
+                
                 
                 // Clean up to save disk space
                 sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
