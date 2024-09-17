@@ -57,7 +57,7 @@ pipeline {
                             "--build-arg BUILDTIME_DB_PORT=${DB_PORT}",
                             "--build-arg BUILDTIME_DB_USERNAME=${DB_USERNAME}",
                             "--build-arg BUILDTIME_DB_PASSWORD=${DB_PASSWORD}",
-                            "--build-arg BUILDTIME_DB_DATABASE=${DB_DATABASE}"
+                            "--build-arg BUILDTIME_DB_DATABASE=${DB_DATABASE}",
                             "-f ${DOCKERFILE_PATH} ."
                         )
                     }
