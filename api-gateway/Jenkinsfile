@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     environment {
-        REGISTRY_DOMAIN = "https://891377192865.dkr.ecr.us-east-1.amazonaws.com"
+        REGISTRY_DOMAIN = "https://730335476156.dkr.ecr.us-east-1.amazonaws.com"
         DOCKERFILE_PATH = "api-gateway/Dockerfile"
         SERVICE = "api-gateway"
         DOCKER_TAG = "api-gateway-${GIT_COMMIT.substring(0, 7)}"
-        DOCKER_IMAGE = "891377192865.dkr.ecr.us-east-1.amazonaws.com/fcjws2"
+        DOCKER_IMAGE = "https://730335476156.dkr.ecr.us-east-1.amazonaws.com"
         CRE_ID = "aws-cre"
     }
 
@@ -48,6 +48,12 @@ pipeline {
         }
 
         stage('Deploy Image') {
+            when {
+                expression {
+                    // This condition checks if the 'Test' stage was successful
+                    currentBuild.rawBuild.getPreviousBuild()?.getResult() == 'SUCCESS'
+                }
+            }
             steps{
                 script{
                     docker.withRegistry("${REGISTRY_DOMAIN}", "ecr:us-east-1:${CRE_ID}") {
