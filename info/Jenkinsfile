@@ -50,14 +50,14 @@ pipeline {
                     string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD'),
                     string(credentialsId: 'DB_DATABASE', variable: 'DB_DATABASE')
                 ]){
-                    script{
+                    script {
                         app = docker.build(
                             "${DOCKER_IMAGE}:${DOCKER_TAG}", 
-                            "--build-arg BUILDTIME_DB_HOST=${DB_HOST}", 
-                            "--build-arg BUILDTIME_DB_PORT=${DB_PORT}",
-                            "--build-arg BUILDTIME_DB_USERNAME=${DB_USERNAME}",
-                            "--build-arg BUILDTIME_DB_PASSWORD=${DB_PASSWORD}",
-                            "--build-arg BUILDTIME_DB_DATABASE=${DB_DATABASE}",
+                            "--build-arg BUILDTIME_DB_HOST=${DB_HOST} " +
+                            "--build-arg BUILDTIME_DB_PORT=${DB_PORT} " +
+                            "--build-arg BUILDTIME_DB_USERNAME=${DB_USERNAME} " +
+                            "--build-arg BUILDTIME_DB_PASSWORD=${DB_PASSWORD} " +
+                            "--build-arg BUILDTIME_DB_DATABASE=${DB_DATABASE} " +
                             "-f ${DOCKERFILE_PATH} ."
                         )
                     }
