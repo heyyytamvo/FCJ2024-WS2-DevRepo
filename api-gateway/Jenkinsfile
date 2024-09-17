@@ -2,11 +2,13 @@ pipeline {
     agent any
 
     environment {
-        REGISTRY_DOMAIN = "https://730335476156.dkr.ecr.us-east-1.amazonaws.com"
+        ACCOUNT_ID = "730335476156"
+        REGION = "us-east-1"
+        REGISTRY_DOMAIN = "https://${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
         DOCKERFILE_PATH = "api-gateway/Dockerfile"
         SERVICE = "api-gateway"
         DOCKER_TAG = "${SERVICE}-${GIT_COMMIT.substring(0, 7)}"
-        DOCKER_IMAGE = "${REGISTRY_DOMAIN}/fcjws2"
+        DOCKER_IMAGE = "${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/fcjws2"
         CRE_ID = "aws-cre"
     }
 
