@@ -10,7 +10,7 @@ export class AppService {
     private readonly httpService: HttpService
   ) {}
   getHello(): string {
-    return 'Hello World! This is an update to test K8s by heyyytamvo haha hahahihhohoh';
+    return 'Hello World! This is an update to test K8s by heyyytamvo haha hahahihhohoh. Last Update is Sep 17th 2024';
   }
 
   async createOrder(orderData: createOrderDto): Promise<any> {
