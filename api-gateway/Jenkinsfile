@@ -4,9 +4,9 @@ pipeline {
     environment {
         ACCOUNT_ID = "730335476156"
         REGION = "us-east-1"
-        REGISTRY_DOMAIN = "https://${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
-        DOCKERFILE_PATH = "api-gateway/Dockerfile"
         SERVICE = "api-gateway"
+        REGISTRY_DOMAIN = "https://${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
+        DOCKERFILE_PATH = "${SERVICE}/Dockerfile"
         DOCKER_TAG = "${SERVICE}-${GIT_COMMIT.substring(0, 7)}"
         DOCKER_IMAGE = "${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/fcjws2"
         CRE_ID = "aws-cre"
@@ -63,9 +63,6 @@ pipeline {
                         echo "No vulnerabilities found in the Docker image."
                     } else {
                         echo "Vulnerabilities found in the Docker image."
-                        // You can take further actions here based on your requirements
-                        // For example, failing the build if vulnerabilities are found
-                        // error "Vulnerabilities found in the Docker image."
                     }
                 }
             }
@@ -82,7 +79,7 @@ pipeline {
             }
             steps{
                 script{
-                    docker.withRegistry("${REGISTRY_DOMAIN}", "ecr:us-east-1:${CRE_ID}") {
+                    docker.withRegistry("${REGISTRY_DOMAIN}", "ecr:${REGION}:${CRE_ID}") {
                         app.push()   
                     }
                 }
