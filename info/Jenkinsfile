@@ -1,53 +1,24 @@
 pipeline {
     agent any
-    stages {
-        stage("build") {
+
+    environment {
+        ACCOUNT_ID = "730335476156"
+        REGION = "us-east-1"
+        SERVICE = "info"
+        REGISTRY_DOMAIN = "https://${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
+        DOCKERFILE_PATH = "${SERVICE}/Dockerfile"
+        DOCKER_TAG = "${SERVICE}-${GIT_COMMIT.substring(0, 7)}"
+        DOCKER_IMAGE = "${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/fcjws2"
+        CRE_ID = "aws-cre"
+    }
+
+    stages { 
+        stage('SonarQube Analysis Source Code') {
             when { 
                 allOf {
-                    changeset "info/**"
-                    expression {  // there are changes in info/...
-                        sh(returnStatus: true, script: 'git diff info/') == 0
-                    }
-                }
-            }
-            environment {
-                // DOCKER_TAG="info-service-${GIT_BRANCH.tokenize('/').pop()}-${GIT_COMMIT.substring(0,7)}"
-                DOCKER_TAG="info-service-${GIT_COMMIT.substring(0,7)}"
-                DOCKER_IMAGE="heyyytamvo/eks"
-            }
-            steps {
-                withCredentials([
-                    string(credentialsId: 'DB_HOST', variable: 'DB_HOST'),
-                    string(credentialsId: 'DB_PORT', variable: 'DB_PORT'),
-                    string(credentialsId: 'DB_USERNAME', variable: 'DB_USERNAME'),
-                    string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD'),
-                    string(credentialsId: 'DB_DATABASE', variable: 'DB_DATABASE')
-                ]){
-                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} \
-                    --build-arg BUILDTIME_DB_HOST=${DB_HOST} \
-                    --build-arg BUILDTIME_DB_PORT=${DB_PORT} \
-                    --build-arg BUILDTIME_DB_USERNAME=${DB_USERNAME} \
-                    --build-arg BUILDTIME_DB_PASSWORD=${DB_PASSWORD} \
-                    --build-arg BUILDTIME_DB_DATABASE=${DB_DATABASE} \
-                    -f info/Dockerfile . "
-                }
-                sh "docker image ls | grep ${DOCKER_IMAGE}"
-                withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh 'echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin'
-                    sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
-                }
-
-                //clean to save disk
-                sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            when { 
-                allOf {
-                    changeset "info/**"
+                    changeset "${SERVICE}/**"
                     expression { 
-                        sh(returnStatus: true, script: 'git diff --quiet info/') == 0
+                        sh(returnStatus: true, script: 'git diff --quiet ${SERVICE}/') == 0
                     }
                 }
             }
@@ -59,6 +30,81 @@ pipeline {
                         sh "${scannerHome}/bin/sonar-scanner"
                     }
                 }
+            }
+        }
+
+        stage('Build') {
+            when { 
+                allOf {
+                    changeset "${SERVICE}/**"
+                    expression { 
+                        sh(returnStatus: true, script: 'git diff --quiet ${SERVICE}/') == 0
+                    }
+                }
+            }
+            steps {
+                withCredentials([
+                    string(credentialsId: 'DB_HOST', variable: 'DB_HOST'),
+                    string(credentialsId: 'DB_PORT', variable: 'DB_PORT'),
+                    string(credentialsId: 'DB_USERNAME', variable: 'DB_USERNAME'),
+                    string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD'),
+                    string(credentialsId: 'DB_DATABASE', variable: 'DB_DATABASE')
+                ]){
+                    script{
+                        app = docker.build(
+                            "${DOCKER_IMAGE}:${DOCKER_TAG}", 
+                            "--build-arg BUILDTIME_DB_HOST=${DB_HOST}", 
+                            "--build-arg BUILDTIME_DB_PORT=${DB_PORT}",
+                            "--build-arg BUILDTIME_DB_USERNAME=${DB_USERNAME}",
+                            "--build-arg BUILDTIME_DB_PASSWORD=${DB_PASSWORD}",
+                            "--build-arg BUILDTIME_DB_DATABASE=${DB_DATABASE}"
+                            "-f ${DOCKERFILE_PATH} ."
+                        )
+                    }
+                }
+            }
+        }
+
+        stage('Scan Image') {
+            steps {
+                script {
+                    // Run Trivy to scan the Docker image
+                    def trivyOutput = sh(script: "trivy image ${DOCKER_IMAGE}:${DOCKER_TAG}", returnStdout: true).trim()
+
+                    // Display Trivy scan results
+                    println trivyOutput
+
+                    // Check if vulnerabilities were found
+                    if (trivyOutput.contains("Total: 0")) {
+                        echo "No vulnerabilities found in the Docker image."
+                    } else {
+                        echo "Vulnerabilities found in the Docker image."
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Image') {
+            when { 
+                allOf {
+                    changeset "${SERVICE}/**"
+                    expression { 
+                        sh(returnStatus: true, script: 'git diff --quiet ${SERVICE}/') == 0
+                    }
+                }
+            }
+            steps{
+                script{
+                    docker.withRegistry("${REGISTRY_DOMAIN}", "ecr:${REGION}:${CRE_ID}") {
+                        app.push()   
+                    }
+                }
+            }
+        }
+
+        stage('Remove Resource') {
+            steps{
+                sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
             }
         }
     }
