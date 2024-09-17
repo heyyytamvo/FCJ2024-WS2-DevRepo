@@ -5,8 +5,8 @@ pipeline {
         REGISTRY_DOMAIN = "https://730335476156.dkr.ecr.us-east-1.amazonaws.com"
         DOCKERFILE_PATH = "api-gateway/Dockerfile"
         SERVICE = "api-gateway"
-        DOCKER_TAG = "api-gateway-${GIT_COMMIT.substring(0, 7)}"
-        DOCKER_IMAGE = "https://730335476156.dkr.ecr.us-east-1.amazonaws.com"
+        DOCKER_TAG = "${SERVICE}-${GIT_COMMIT.substring(0, 7)}"
+        DOCKER_IMAGE = "${REGISTRY_DOMAIN}/fcjws2"
         CRE_ID = "aws-cre"
     }
 
