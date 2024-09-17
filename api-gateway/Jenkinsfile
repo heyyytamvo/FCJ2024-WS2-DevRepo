@@ -42,6 +42,7 @@ pipeline {
                     }
                 }
             }
+
             steps {
                 script{
                     app = docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}", "-f ${DOCKERFILE_PATH} .")
@@ -50,6 +51,15 @@ pipeline {
         }
 
         stage('Scan Image') {
+            when { 
+                allOf {
+                    changeset "${SERVICE}/**"
+                    expression { 
+                        sh(returnStatus: true, script: 'git diff --quiet ${SERVICE}/') == 0
+                    }
+                }
+            }
+
             steps {
                 script {
                     // Run Trivy to scan the Docker image
@@ -87,6 +97,15 @@ pipeline {
         }
 
         stage('Remove Resource') {
+            when { 
+                allOf {
+                    changeset "${SERVICE}/**"
+                    expression { 
+                        sh(returnStatus: true, script: 'git diff --quiet ${SERVICE}/') == 0
+                    }
+                }
+            }
+            
             steps{
                 sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
             }
