@@ -13,16 +13,15 @@ pipeline {
     }
 
     stages { 
-        stage('SonarQube Analysis Source Code') {
-            when { 
-                allOf {
-                    changeset "${SERVICE}/**"
-                    expression { 
-                        sh(returnStatus: true, script: 'git diff --quiet ${SERVICE}/') == 0
-                    }
+        when { 
+            allOf {
+                changeset "${SERVICE}/**"
+                expression { 
+                    sh(returnStatus: true, script: 'git diff --quiet ${SERVICE}/') == 0
                 }
             }
-
+        }
+        stage('SonarQube Analysis Source Code') {
             steps {
                 script {
                     def scannerHome = tool 'SonarScanner'
@@ -34,14 +33,6 @@ pipeline {
         }
 
         stage('Build') {
-            when { 
-                allOf {
-                    changeset "${SERVICE}/**"
-                    expression { 
-                        sh(returnStatus: true, script: 'git diff --quiet ${SERVICE}/') == 0
-                    }
-                }
-            }
             steps {
                 withCredentials([
                     string(credentialsId: 'DB_HOST', variable: 'DB_HOST'),
@@ -85,14 +76,6 @@ pipeline {
         }
 
         stage('Deploy Image') {
-            when { 
-                allOf {
-                    changeset "${SERVICE}/**"
-                    expression { 
-                        sh(returnStatus: true, script: 'git diff --quiet ${SERVICE}/') == 0
-                    }
-                }
-            }
             steps{
                 script{
                     docker.withRegistry("${REGISTRY_DOMAIN}", "ecr:${REGION}:${CRE_ID}") {
