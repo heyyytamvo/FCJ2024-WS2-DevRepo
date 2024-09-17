@@ -50,10 +50,12 @@ pipeline {
         }
 
         stage('Deploy Image') {
-            when {
-                expression {
-                    // This condition checks if the 'Test' stage was successful
-                    currentBuild.rawBuild.getPreviousBuild()?.getResult() == 'SUCCESS'
+            when { 
+                allOf {
+                    changeset "${SERVICE}/**"
+                    expression { 
+                        sh(returnStatus: true, script: 'git diff --quiet ${SERVICE}/') == 0
+                    }
                 }
             }
             steps{
