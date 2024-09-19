@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        ACCOUNT_ID = "730335476156"
+        ACCOUNT_ID = "851725180020"
         REGION = "us-east-1"
         SERVICE = "order"
         REGISTRY_DOMAIN = "https://${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
@@ -26,7 +26,7 @@ pipeline {
             steps {
                 script {
                     def scannerHome = tool 'SonarScanner'
-                    withSonarQubeEnv('jenkins') {
+                    withSonarQubeEnv('sonar-host') {
                         sh "${scannerHome}/bin/sonar-scanner"
                     }
                 }

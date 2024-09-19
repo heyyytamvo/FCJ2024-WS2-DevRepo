@@ -13,25 +13,25 @@ pipeline {
     }
 
     stages { 
-        // stage('SonarQube Analysis Source Code') {
-        //     when { 
-        //         allOf {
-        //             changeset "${SERVICE}/**"
-        //             expression { 
-        //                 sh(returnStatus: true, script: 'git diff --quiet ${SERVICE}/') == 0
-        //             }
-        //         }
-        //     }
+        stage('SonarQube Analysis Source Code') {
+            when { 
+                allOf {
+                    changeset "${SERVICE}/**"
+                    expression { 
+                        sh(returnStatus: true, script: 'git diff --quiet ${SERVICE}/') == 0
+                    }
+                }
+            }
 
-        //     steps {
-        //         script {
-        //             def scannerHome = tool 'SonarScanner'
-        //             withSonarQubeEnv('jenkins') {
-        //                 sh "${scannerHome}/bin/sonar-scanner"
-        //             }
-        //         }
-        //     }
-        // }
+            steps {
+                script {
+                    def scannerHome = tool 'SonarScanner'
+                    withSonarQubeEnv('sonar-host') {
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                }
+            }
+        }
 
         stage('Build') {
             when { 
