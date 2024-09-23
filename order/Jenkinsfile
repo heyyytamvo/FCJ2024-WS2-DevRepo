@@ -5,7 +5,7 @@ pipeline {
         ACCOUNT_ID = "339712719504"
         REPO_NAME = "fcjws2"
         REGION = "us-east-1"
-        SERVICE = "api-gateway"
+        SERVICE = "order"
         CRE_ID = "aws-cre"
         REGISTRY_DOMAIN = "https://${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
         DOCKERFILE_PATH = "${SERVICE}/Dockerfile"
