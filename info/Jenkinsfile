@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        ACCOUNT_ID = "339712719504"
+        ACCOUNT_ID = "992382469397"
         REPO_NAME = "fcjws2"
         REGION = "us-east-1"
         SERVICE = "info"
